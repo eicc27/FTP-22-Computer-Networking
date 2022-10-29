@@ -1,8 +1,32 @@
 # include <stdio.h>
-# define MAX_LEN 1024
+# include "command.h"
+# include "util.h"
+
+# define MAX_LEN 256
+
+void initialize(){
+    // TODO: initialize the ftp client end
+    return;
+}
+
+
+// Read command lines and react.
+bool client_ftp(){
+    char input[MAX_LEN];
+    scanf("%[^\n]", input);
+
+    // TODO: split string
+    Command cmd = get_command(input); // FIXME
+    printf("Hello World! %d\n", cmd.sem);
+
+    bool res = cmd.function(NULL);
+    clear_buffer();
+
+    return res;
+}
+
 
 int main(){
-    char string[MAX_LEN];
-    scanf("%s", string);
-    printf("Hello World! %s\n", string);
+    initialize();
+    while(client_ftp());
 }
