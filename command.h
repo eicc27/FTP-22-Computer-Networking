@@ -5,6 +5,8 @@
 # include <stdio.h>
 # include <stdbool.h>
 
+# include "util.h"
+
 # define CMD_NUM 8
 
 # define CMD_GET  "get"
@@ -15,6 +17,8 @@
 # define CMD_MKD  "mkdir"
 # define CMD_PWD  "pwd"
 # define CMD_QUIT "quit"
+
+# define NULL_STR ""
 
 typedef enum {
     SEM_GET, 
@@ -45,11 +49,13 @@ bool client_mkdir(const char*);
 bool client_pwd(const char*);
 bool client_quit(const char*);
 bool client_err(const char*);
+bool client_null(const char*);
 
 Semanteme get_semanteme(char*);
 Command get_command(char*);
 
 extern const Command commands[CMD_NUM];
 extern const Command error_command;
+extern const Command null_command;
 
 # endif

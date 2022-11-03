@@ -12,21 +12,27 @@ void initialize(){
 
 // Read command lines and react.
 bool client_ftp(){
+    printf(">");
     char input[MAX_LEN];
-    scanf("%[^\n]", input);
+    scanf(" %[^\n]", input);
 
-    // TODO: split string
-    Command cmd = get_command(input); // FIXME
-    printf("Hello World! %d\n", cmd.sem);
+    Arguments args = split_input(input);
 
-    bool res = cmd.function(NULL);
+    Command cmd = get_command(args.argv[0]);
+
+    // printf("checking %d\n", args.argc);
+    // for(int i = 0; i < args.argc; i++) printf("%s\n", args.argv[i]);
+
+    bool res = cmd.function(args.argv[1]);
+
     clear_buffer();
+    cmd = null_command;
 
     return res;
 }
 
 
-int main(){
+int main(int argc, char* argv[]){
     initialize();
     while(client_ftp());
 }

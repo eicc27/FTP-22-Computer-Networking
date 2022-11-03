@@ -13,7 +13,8 @@ const Command commands[CMD_NUM] = {
     {SEM_QUIT, 0, CMD_QUIT, "", client_quit}    
 };
 
-const Command error_command = {SEM_ERR, 0, "", "", client_err};
+const Command error_command = {SEM_ERR, 0, NULL_STR, "", client_err};
+const Command null_command = {SEM_ERR, 0, NULL_STR, "", client_null};
 
 Semanteme get_semanteme(char* cmd){
     for(int i = 0; i < CMD_NUM; i++)
@@ -23,6 +24,7 @@ Semanteme get_semanteme(char* cmd){
 
 
 Command get_command(char* cmd){
+    if(!strcmp(cmd, NULL_STR)) return null_command;
     for(int i = 0; i < CMD_NUM; i++)
         if(!strcmp(cmd, commands[i].cmd)) return commands[i];
     return error_command;
@@ -45,7 +47,7 @@ bool client_delete(const char* arg){
 
 bool client_ls(const char* arg){ // arg not used
     if(arg) printf("ls command should not have args. Redundant args are ignored.\n");
-    printf("client ls %s\n", arg);
+    printf("list in dir\n");
     return true;
 }
 
@@ -68,9 +70,17 @@ bool client_pwd(const char* arg){ // arg not used
 bool client_quit(const char* arg){ // arg not used
     if(arg) printf("quit command should not have args. Redundant args are ignored.\n");
     printf("leaving ftp...\n");
+    // TODO: close socket
     return false;
 }
 
 bool client_err(const char* arg){
+    printf("invalid command\n");
+    for_i_in_range(CMD_NUM)
+        printf("%s ---- %s\n", commands[i].cmd, commands[i].help);
+    return true;
+}
+
+bool client_null(const char* arg){
     return true;
 }
