@@ -2,33 +2,22 @@
 # include "command.h"
 # include "util.h"
 
-# define MAX_LEN 256
-
 void initialize(){
     // TODO: initialize the ftp client end
+    printf("initializing ftp...\n");
+
     return;
 }
 
-
 // Read command lines and react.
 bool client_ftp(){
-    printf(">");
+    printf("ftp>");
     char input[MAX_LEN];
-    scanf(" %[^\n]", input);
-
-    Arguments args = split_input(input);
-
-    Command cmd = get_command(args.argv[0]);
-
-    // printf("checking %d\n", args.argc);
-    // for(int i = 0; i < args.argc; i++) printf("%s\n", args.argv[i]);
-
-    bool res = cmd.function(args.argv[1]);
-
+    scanf(" %256[^\n]", input);
     clear_buffer();
-    cmd = null_command;
-
-    return res;
+    Arguments args = split_string(input);
+    Command cmd = get_command(args.argv[0]);
+    return cmd.function(args.argc>1 ? args.argv[1] : NULL);
 }
 
 

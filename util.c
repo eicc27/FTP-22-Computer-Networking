@@ -1,11 +1,10 @@
 # include "util.h"
 
-// TODO: implement functions in util.h
 void clear_buffer(){
     while(getchar()!='\n');
 }
 
-Arguments split_input(const char* input){
+Arguments split_string(const char* input){
     const char* p = NULL;
     Arguments args = {0, 0};
 
@@ -15,9 +14,8 @@ Arguments split_input(const char* input){
         args.err = true;
         return args;
     }
-
-    p = strtok(input, " ");
-    // printf("%s\n", p);
+    
+    p = strtok((char*)input, " ");
     args.argv[0] = p;
     args.argc ++;
     while((p = strtok(NULL, " "))!=NULL){
