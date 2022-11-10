@@ -26,12 +26,14 @@ Arguments split_string(const char* input){
     return args;
 }
 
+/* Initializes a new client socket connection. If any error
+happens in socket initialization or connection, quit the client
+with ret val 1.
+*/
 int new_socket_conn(sockaddr_in addr){
-
-
-
-    // under linux
+    // under Windows
     int sockfd;
+    // # ifdef _WIN32
     if((sockfd=socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         printf("Socket Error!\n");
@@ -42,11 +44,11 @@ int new_socket_conn(sockaddr_in addr){
         printf("Connect Error!\n");
         exit(1);
     }
+    // #endif
     return sockfd;
 }
 
 void close_socket_conn(int sockfd){
-
-    // under linux
+    // under Windows
     close(sockfd);
 }

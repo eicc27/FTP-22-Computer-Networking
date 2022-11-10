@@ -6,7 +6,7 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
-# include <strings.h>
+// # include <strings.h>
 # include <stdbool.h>
 # include <errno.h>
 
@@ -28,6 +28,7 @@
 
 # include <dirent.h> // for ls
 
+// end of `DEFINE _WIN32`
 # endif
 
 
@@ -53,4 +54,5 @@ int write_socket_conn(); // TODO
 int read_socket_conn(); // TODO
 void close_socket_conn(int); // TODO
 
+// end of `#define __UTIL__`
 # endif

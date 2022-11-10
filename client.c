@@ -23,7 +23,7 @@ bool client_ftp(sockaddr_in addr){
     clear_buffer();
     Arguments args = split_string(input);
     Command cmd = get_command(args.argv[0]);
-    return cmd.function(addr, args.argc>1 ? args.argv[1] : NULL);
+    return cmd.function(addr, args.argc > 1 ? args.argv[1] : NULL);
 }
 
 
