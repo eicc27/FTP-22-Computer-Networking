@@ -25,3 +25,28 @@ Arguments split_string(const char* input){
 
     return args;
 }
+
+int new_socket_conn(sockaddr_in addr){
+
+
+
+    // under linux
+    int sockfd;
+    if((sockfd=socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        printf("Socket Error!\n");
+        exit(1);
+    }
+    if(connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+    {
+        printf("Connect Error!\n");
+        exit(1);
+    }
+    return sockfd;
+}
+
+void close_socket_conn(int sockfd){
+
+    // under linux
+    close(sockfd);
+}

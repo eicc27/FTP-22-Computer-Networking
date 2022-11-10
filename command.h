@@ -53,19 +53,19 @@ typedef struct{
     short arg_num;
     const char* cmd;
     const char* help;
-    bool (*function)(const char*);
+    bool (*function)(sockaddr_in, const char*);
 } Command;
 
-bool client_get(const char*);
-bool client_put(const char*);
-bool client_delete(const char*);
-bool client_ls(const char*);
-bool client_cd(const char*);
-bool client_mkdir(const char*);
-bool client_pwd(const char*);
-bool client_quit(const char*);
-bool client_err(const char*);
-bool client_null(const char*);
+bool client_get(sockaddr_in, const char*);
+bool client_put(sockaddr_in, const char*);
+bool client_delete(sockaddr_in, const char*);
+bool client_ls(sockaddr_in, const char*);
+bool client_cd(sockaddr_in, const char*);
+bool client_mkdir(sockaddr_in, const char*);
+bool client_pwd(sockaddr_in, const char*);
+bool client_quit(sockaddr_in, const char*);
+bool client_err(sockaddr_in, const char*);
+bool client_null(sockaddr_in, const char*);
 
 void help();
 

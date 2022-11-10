@@ -32,71 +32,86 @@ Command get_command(const char* cmd){
     return error_command;
 }
 
-bool client_get(const char* arg){
+bool client_get(sockaddr_in addr, const char* arg){
     // TODO: client get
     printf("client get %s\n", arg);
 
+    int sockfd = new_socket_conn(addr);
+
+
+    close_socket_conn(sockfd);
+
     return true;
 }
 
-bool client_put(const char* arg){
+bool client_put(sockaddr_in addr, const char* arg){
     // TODO: client put
     printf("client put %s\n", arg);
+    int sockfd = new_socket_conn(addr);
+
+    close_socket_conn(sockfd);
 
     return true;
 }
 
-bool client_delete(const char* arg){
+bool client_delete(sockaddr_in addr, const char* arg){
     // TODO: client delete
     printf("client delete %s\n", arg);
+    int sockfd = new_socket_conn(addr);
 
+    close_socket_conn(sockfd);
     return true;
 }
 
-bool client_ls(const char* arg){ // arg not used
+bool client_ls(sockaddr_in addr, const char* arg){ // arg not used
     // TODO: client ls
     if(arg) printf(IGNORE_ARGUMENT(ls));
+    int sockfd = new_socket_conn(addr);
     printf("list in dir\n");
 
+    close_socket_conn(sockfd);
     return true;
 }
 
-bool client_cd(const char* arg){
+bool client_cd(sockaddr_in addr, const char* arg){
     // TODO: client cd
     printf("client cd %s\n", arg);
-
+    int sockfd = new_socket_conn(addr);
+    close_socket_conn(sockfd);
     return true;
 }
 
-bool client_mkdir(const char* arg){
+bool client_mkdir(sockaddr_in addr, const char* arg){
     // TODO: client mkdir
     printf("client mkdir %s\n", arg);
+    int sockfd = new_socket_conn(addr);
+
+    close_socket_conn(sockfd);
 
     return true;
 }
 
-bool client_pwd(const char* arg){ // arg not used
+bool client_pwd(sockaddr_in addr, const char* arg){ // arg not used
     // TODO: client pwd
     if(arg) printf(IGNORE_ARGUMENT(pwd));
+    int sockfd = new_socket_conn(addr);
     printf("client pwd\n");
-    
     return true;
 }
 
-bool client_quit(const char* arg){ // arg not used
+bool client_quit(sockaddr_in addr, const char* arg){ // arg not used
     if(arg) printf(IGNORE_ARGUMENT(quit));
     printf("leaving ftp...\n");
-    // TODO: close socket
     return false;
 }
 
-bool client_err(const char* arg){
+bool client_err(sockaddr_in addr, const char* arg){
     printf("invalid command\n");
     help();
     return true;
 }
 
-bool client_null(const char* arg){
+bool client_null(sockaddr_in addr, const char* arg){
     return true;
 }
 
