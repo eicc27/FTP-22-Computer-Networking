@@ -58,11 +58,11 @@ typedef struct{
 
 bool client_get(sockaddr_in, const char*);
 bool client_put(sockaddr_in, const char*);
-bool client_delete(sockaddr_in, const char*);
-bool server_ls(SOCKET s);
-bool client_cd(sockaddr_in, const char*);
-bool client_mkdir(sockaddr_in, const char*);
-bool client_pwd(sockaddr_in, const char*);
+bool server_delete(SOCKET, const char*);
+bool server_ls(SOCKET ,const char*);
+bool server_cd(SOCKET , const char*);
+bool server_mkdir(SOCKET , const char*);
+bool server_pwd(SOCKET , const char*);
 bool client_quit(sockaddr_in, const char*);
 bool client_err(sockaddr_in, const char*);
 bool client_null(sockaddr_in, const char*);

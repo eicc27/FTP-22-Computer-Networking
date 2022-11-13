@@ -1,16 +1,17 @@
 #include "command.h"
 #include <fcntl.h>
 char buffer[256];
+char cwd[256];
 // TODO: implement functions client_xxx
 
 const Command commands[CMD_NUM] = {
     {SEM_GET, 1, CMD_GET, HELP_GET, client_get},
     {SEM_PUT, 1, CMD_PUT, HELP_PUT, client_put},
-    {SEM_DEL, 1, CMD_DEL, HELP_DEL, client_delete},
+    {SEM_DEL, 1, CMD_DEL, HELP_DEL, server_delete},
     {SEM_LS, 0, CMD_LS, HELP_LS, server_ls},
-    {SEM_CD, 1, CMD_CD, HELP_CD, client_cd},
-    {SEM_MKD, 1, CMD_MKD, HELP_MKD, client_mkdir},
-    {SEM_PWD, 0, CMD_PWD, HELP_PWD, client_pwd},
+    {SEM_CD, 1, CMD_CD, HELP_CD, server_cd},
+    {SEM_MKD, 1, CMD_MKD, HELP_MKD, server_mkdir},
+    {SEM_PWD, 0, CMD_PWD, HELP_PWD, server_pwd},
     {SEM_QUIT, 0, CMD_QUIT, HELP_QUIT, client_quit}};
 
 const Command error_command = {SEM_ERR, 0, NULL_STR, "", client_err};
@@ -104,20 +105,32 @@ bool client_put(sockaddr_in addr, const char *arg)
 /*Run `delete` to remove a given directory on the server.
 The client just simply prints the value the server returns.
  */
-bool client_delete(sockaddr_in addr, const char *arg)
+bool server_delete(SOCKET s, const char *path)
 {
-    int sockfd = new_socket_conn(addr);
-    // client arg ---> server
-    if (write(sockfd, arg, MAX_LEN) < 0)
-    {
-        printf("Write error: Failed to write to the server\n");
-        exit(1);
+#ifdef _WIN32
+    if (remove(path) == 0) {
+        char msg[] = "文件删除成功\n";
+        printf("%s",msg);
+        if (send(s, (char*)msg, MAX_LEN, 0) <= 0) {
+            printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
+            return false;
+        }
     }
-    printf("client delete... %s\n", arg);
-    // server `sockfd` ---> arg
-    while (read(sockfd, arg, MAX_LEN) > 0)
-        printf("%s", arg);
-    close_socket_conn(sockfd);
+    else {
+        char msg[] = "文件删除失败,文件夹禁止删除或文件不存在\n";
+        printf("%s", msg);
+        if (send(s, (char*)msg, MAX_LEN, 0) <= 0) {
+            printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
+            return false;
+        }
+        return false;
+    }
+#else
+
+
+
+#endif
+    
     return true;
 }
 
@@ -126,15 +139,11 @@ The client just simply prints the value the server returns.
 TODO: This interface sends the argument directly to the server.
 The server has to deal with and parse these different arguments.
 */
-bool server_ls(SOCKET s)
+bool server_ls(SOCKET s,const char * path)
 {
 
     #ifdef _WIN32
-    if (_chdir(".\\"))
-    {
-        printf("打开文件夹失败.\n");
-        return 1;
-    }
+
     struct _finddata_t file;
     intptr_t   hFile;
     hFile = _findfirst("*", &file);
@@ -148,11 +157,11 @@ bool server_ls(SOCKET s)
         result = stat(file.name, &buf);
         if (S_IFDIR & buf.st_mode) {
             strcpy_s(fileNameBuf, strlen(file.name)+1, file.name);
-            strcat_s(fileNameBuf, strlen(file.name)+1 +strlen("/ "), "/ ");
+            strcat_s(fileNameBuf, strlen(file.name)+1 +strlen("/    "), "/    ");
         }
         else if (S_IFREG & buf.st_mode) {
             strcpy_s(fileNameBuf, strlen(file.name)+1, file.name);
-            strcat_s(fileNameBuf, strlen(file.name)+1 + strlen(" "), " ");
+            strcat_s(fileNameBuf, strlen(file.name)+1 + strlen("    "), "    ");
         }
         strcat_s(buffer, strlen(buffer) + strlen(fileNameBuf) + 1, fileNameBuf);
         
@@ -160,14 +169,12 @@ bool server_ls(SOCKET s)
     printf("%s\n",buffer);
     if (send(s, (char *)buffer, MAX_LEN,0)<=0) {
         printf("Send error: Failed to send to the client.%d\n",WSAGetLastError());
-        exit(1);
+        return false;
     }
     #else
-    if (write(sockfd, CMD_LS, MAX_LEN) < 0)
-    {
-        printf("Write error: Failed to write to the server\n");
-        exit(1);
-    }
+    
+
+
     #endif
     return true;
 }
@@ -179,63 +186,79 @@ of the client interface. Just like:
 C:/Program Files>cd ..
 C:/>
 */
-bool client_cd(sockaddr_in addr, const char *arg)
+bool server_cd(SOCKET s, const char* path)
 {
-    printf("client cd %s\n", arg);
-    int sockfd = new_socket_conn(addr);
-    // client arg ---> server
-    if (write(sockfd, arg, MAX_LEN) < 0)
+#ifdef _WIN32
+    if (_chdir(path))
     {
-        printf("Write error: Failed to write to the server\n");
+        printf("打开文件夹失败.\n");
+        char msg[] = "打开文件夹失败\n";
+        strcpy_s(buffer, strlen(msg) + 1, msg);
+        if (send(s, buffer, strlen(buffer), 0) <= 0) {
+            printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
+            exit(1);
+        }
+        return false;
+    }
+    _getcwd(cwd, sizeof(cwd) != 0);
+
+
+    printf("cwd:%s\n",cwd);
+    if (send(s, (char*)cwd, strlen(cwd)+1, 0) <= 0) {
+        printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
         exit(1);
     }
-    printf("client delete... %s\n", arg);
-    // server `sockfd` ---> arg
-    while (read(sockfd, arg, MAX_LEN) > 0)
-        printf("%s", arg);
-    close_socket_conn(sockfd);
+    printf("%s", buffer);
+#else
+
+
+#endif
     return true;
 }
 
 /*Run `mkdir` to make a new directory on client.
 The client just simply prints the value the server returns.
 */
-bool client_mkdir(sockaddr_in addr, const char *arg)
+bool server_mkdir(SOCKET s, const char * folderName)
 {
-    printf("client mkdir %s\n", arg);
-    int sockfd = new_socket_conn(addr);
-    // client arg ---> server
-    if (write(sockfd, arg, MAX_LEN) < 0)
+#ifdef _WIN32
+    if (_access(folderName, 0) == -1)
     {
-        printf("Write error: Failed to write to the server\n");
-        exit(1);
+        _mkdir(folderName);
+        if (send(s, "文件夹创建成功\n", MAX_LEN, 0) <= 0) {
+            printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
+            return false;
+        }
     }
-    printf("client delete... %s\n", arg);
-    // server `sockfd` ---> arg
-    while (read(sockfd, arg, MAX_LEN) > 0)
-        printf("%s", arg);
-    close_socket_conn(sockfd);
+    else {
+        if (send(s, "文件夹已存在\n", MAX_LEN, 0) <= 0) {
+            printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
+            return false;
+        }
+    }
+#else
+
+
+#endif
     return true;
 }
 
 /* Run `pwd` to print the current working directory on server.
 */
-bool client_pwd(sockaddr_in addr, const char *arg)
+bool server_pwd(SOCKET s, const char *path)
 {
-    if (arg)
-        printf(IGNORE_ARGUMENT(pwd));
-    int sockfd = new_socket_conn(addr);
-    // client arg ---> server
-    if (write(sockfd, CMD_PWD, MAX_LEN) < 0)
-    {
-        printf("Write error: Failed to write to the server\n");
-        exit(1);
+#ifdef _WIN32
+
+    _getcwd(buffer, sizeof(buffer));
+    printf("%s\n", buffer);
+    if (send(s, (char*)buffer, MAX_LEN, 0) <= 0) {
+        printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
+        return false;
     }
-    printf("client delete... %s\n", arg);
-    // server `sockfd` ---> arg
-    while (read(sockfd, arg, MAX_LEN) > 0)
-        printf("%s", arg);
-    printf("client pwd\n");
+    printf("已向客户端发送当前工作目录:%s\n",buffer);
+#else
+    
+#endif
     return true;
 }
 

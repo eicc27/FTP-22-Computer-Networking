@@ -1,10 +1,12 @@
 #include "server.h"
+char path[100];
 int main() {
 	printf("Hello!\n");
 	SOCKET server_socket=initialize();
 	if (server_socket != NULL) {
 		printf("初始化完成\n");
 		while (1) {
+			Sleep(3000);
 			connectToClient(server_socket);
 		};
 	}
@@ -54,10 +56,27 @@ bool listenToClient(SOCKET s) {
 		return false;
 	}
 	else {
+		printf("cmd:%s\n", cmd);
+		Arguments args = split_string(cmd);
+		/*if (args.argv[1] != NULL) {
+			printf("客户端输入命令为:%s %s\n", args.argv[0], args.argv[1]);
+		}
+		else {
+			printf("客户端输入命令为:%s\n", args.argv[0]);
+		}*/
+		
 		for_i_in_range(CMD_NUM) {
-			if (!strcmp(cmd, commands[i].cmd)) {
-				printf("客户端输入命令为:%s\n", commands[i].cmd);
-				commands[i].function(s);
+			if (!strcmp(args.argv[0], commands[i].cmd)) {
+				if (args.argv[1] != NULL) {
+					memset(path, 0, sizeof(path));
+					strcpy_s(path, strlen(args.argv[1]) + 1, args.argv[1]);
+					if (path[0] == '.') {
+						strcat_s(path, strlen(path) + 1 + strlen("\\"), "\\");
+						printf("cd path:%s\n", path);
+					}
+				}
+				
+				commands[i].function(s, path);
 			}
 		}
 	}
@@ -66,7 +85,7 @@ bool listenToClient(SOCKET s) {
 }
 
 void connectToClient(SOCKET s) {
-	printf("正在监听\n");
+	
 	//监听客户端链接
 	if (0 != listen(s, 10)) {
 		printf("listen faild:%d\n", WSAGetLastError());
@@ -82,6 +101,9 @@ void connectToClient(SOCKET s) {
 		return NULL;
 	}
 	printf("客户端链接成功\n");
+	printf("正在监听...\n");
+	memset(path, 0, sizeof(path));
+	strcpy_s(path, strlen(".") + 1, ".");
 	while(listenToClient(clifd)) {
 	}
 	return;

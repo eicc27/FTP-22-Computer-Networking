@@ -16,19 +16,28 @@ sockaddr_in initialize(){
 }
 
 // Read command lines and react.
-bool client_ftp(sockaddr_in addr){
-    printf("ftp>");
+bool client_ftp(int sockfd){
+    printf("\n(ftp) ");
+    client_pwd(sockfd, NULL);
+    printf(" > ");
     char input[MAX_LEN];
     scanf(" %256[^\n]", input);
     clear_buffer();
+    printf("\n");
     Arguments args = split_string(input);
     Command cmd = get_command(args.argv[0]);
-    return cmd.function(addr, args.argc > 1 ? args.argv[1] : NULL);
+    //正常结束返回0，结束链接返回1，命令异常返回-1；
+    int exitcode=cmd.function(sockfd, args.argc > 1 ? args.argv[1] : NULL);
+    return exitcode;
 }
 
 
 int main(int argc, char* argv[]){
     sockaddr_in addr = initialize();
-    printf("%d", addr);
-    while(client_ftp(addr));
+ 
+    int sockfd = new_socket_conn(addr);
+    while(client_ftp(sockfd)!=1);
+    close_socket_conn(sockfd);
+    Sleep(5000);
+    return 0;
 }
