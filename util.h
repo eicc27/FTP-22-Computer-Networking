@@ -6,7 +6,7 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
-// # include <strings.h>
+# include <strings.h>
 # include <stdbool.h>
 # include <errno.h>
 
@@ -14,7 +14,7 @@
 
 # include <winsock2.h>
 # include <io.h>
-
+#define bzero(a, b) memset(a, 0, b) // Fixed: for Windows use general memset function
 
 # elif __linux__
 
@@ -53,6 +53,9 @@ int new_socket_conn(sockaddr_in);
 int write_socket_conn(); // TODO
 int read_socket_conn(); // TODO
 void close_socket_conn(int); // TODO
+
+char *unshift_s(char, char *);
+char *unshift_a(const char *, char *);
 
 // end of `#define __UTIL__`
 # endif

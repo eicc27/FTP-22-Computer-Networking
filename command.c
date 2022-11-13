@@ -1,17 +1,12 @@
 #include "command.h"
+#include "util.h"
 #include <fcntl.h>
 
-// TODO: implement functions client_xxx
-
 const Command commands[CMD_NUM] = {
-    {SEM_GET, 1, CMD_GET, HELP_GET, client_get},
-    {SEM_PUT, 1, CMD_PUT, HELP_PUT, client_put},
-    {SEM_DEL, 1, CMD_DEL, HELP_DEL, client_delete},
-    {SEM_LS, 0, CMD_LS, HELP_LS, client_ls},
-    {SEM_CD, 1, CMD_CD, HELP_CD, client_cd},
-    {SEM_MKD, 1, CMD_MKD, HELP_MKD, client_mkdir},
-    {SEM_PWD, 0, CMD_PWD, HELP_PWD, client_pwd},
-    {SEM_QUIT, 0, CMD_QUIT, HELP_QUIT, client_quit}};
+    {SEM_GET, 1, CMD_GET, HELP_GET, client_get},    {SEM_PUT, 1, CMD_PUT, HELP_PUT, client_put},
+    {SEM_DEL, 1, CMD_DEL, HELP_DEL, client_delete}, {SEM_LS, 0, CMD_LS, HELP_LS, client_ls},
+    {SEM_CD, 1, CMD_CD, HELP_CD, client_cd},        {SEM_MKD, 1, CMD_MKD, HELP_MKD, client_mkdir},
+    {SEM_PWD, 0, CMD_PWD, HELP_PWD, client_pwd},    {SEM_QUIT, 0, CMD_QUIT, HELP_QUIT, client_quit}};
 
 const Command error_command = {SEM_ERR, 0, NULL_STR, "", client_err};
 const Command null_command = {SEM_ERR, 0, NULL_STR, "", client_null};
@@ -47,7 +42,7 @@ bool client_get(sockaddr_in addr, const char *arg)
     printf("client get %s\n", arg);
     int sockfd = new_socket_conn(addr);
     // client `arg` ---> server
-    if (write(sockfd, arg, MAX_LEN) < 0)
+    if (write(sockfd, unshift_a(CMD_GET, (char *)arg), MAX_LEN) < 0)
     {
         printf("Write error: Failed to write to the server\n");
         exit(1);
@@ -88,7 +83,7 @@ bool client_put(sockaddr_in addr, const char *arg)
     printf("client put %s\n", arg);
     int sockfd = new_socket_conn(addr);
     // client `arg` ---> server
-    if (write(sockfd, arg, MAX_LEN) < 0)
+    if (write(sockfd, unshift_a(CMD_PUT, (char *)arg), MAX_LEN) < 0)
     {
         printf("Write error: Failed to write to the server\n");
         exit(1);
@@ -97,7 +92,7 @@ bool client_put(sockaddr_in addr, const char *arg)
     int fileLocal;
     if ((fileLocal = open(arg + 4, O_RDONLY)) < 0)
     {
-        prinf("Open error: unable to open local file\n");
+        printf("Open error: unable to open local file\n");
         exit(-1);
     }
     // read N bytes from `fileLocal`...
@@ -130,7 +125,7 @@ bool client_delete(sockaddr_in addr, const char *arg)
     }
     printf("client delete... %s\n", arg);
     // server `sockfd` ---> arg
-    while (read(sockfd, arg, MAX_LEN) > 0)
+    while (read(sockfd, (void *)arg, MAX_LEN) > 0)
         printf("%s", arg);
     close_socket_conn(sockfd);
     return true;
@@ -154,7 +149,7 @@ bool client_ls(sockaddr_in addr, const char *arg)
     }
     printf("list in dir...\n");
     // server `sockfd` ---> arg
-    while (read(sockfd, arg, MAX_LEN) > 0)
+    while (read(sockfd, (void *)arg, MAX_LEN) > 0)
         printf("%s", arg);
     close_socket_conn(sockfd);
     return true;
@@ -172,14 +167,14 @@ bool client_cd(sockaddr_in addr, const char *arg)
     printf("client cd %s\n", arg);
     int sockfd = new_socket_conn(addr);
     // client arg ---> server
-    if (write(sockfd, arg, MAX_LEN) < 0)
+    if (write(sockfd, unshift_a(CMD_CD, (char *)arg), MAX_LEN) < 0)
     {
         printf("Write error: Failed to write to the server\n");
         exit(1);
     }
     printf("client delete... %s\n", arg);
     // server `sockfd` ---> arg
-    while (read(sockfd, arg, MAX_LEN) > 0)
+    while (read(sockfd, (void *)arg, MAX_LEN) > 0)
         printf("%s", arg);
     close_socket_conn(sockfd);
     return true;
@@ -200,14 +195,14 @@ bool client_mkdir(sockaddr_in addr, const char *arg)
     }
     printf("client delete... %s\n", arg);
     // server `sockfd` ---> arg
-    while (read(sockfd, arg, MAX_LEN) > 0)
+    while (read(sockfd, (void *)arg, MAX_LEN) > 0)
         printf("%s", arg);
     close_socket_conn(sockfd);
     return true;
 }
 
 /* Run `pwd` to print the current working directory on server.
-*/
+ */
 bool client_pwd(sockaddr_in addr, const char *arg)
 {
     if (arg)
@@ -221,7 +216,7 @@ bool client_pwd(sockaddr_in addr, const char *arg)
     }
     printf("client delete... %s\n", arg);
     // server `sockfd` ---> arg
-    while (read(sockfd, arg, MAX_LEN) > 0)
+    while (read(sockfd, (void *)arg, MAX_LEN) > 0)
         printf("%s", arg);
     printf("client pwd\n");
     return true;
@@ -249,6 +244,5 @@ bool client_null(sockaddr_in addr, const char *arg)
 
 void help()
 {
-    for_i_in_range(CMD_NUM)
-        printf("%8s -- %s\n", commands[i].cmd, commands[i].help);
+    for_i_in_range(CMD_NUM) printf("%8s -- %s\n", commands[i].cmd, commands[i].help);
 }
