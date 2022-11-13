@@ -1,0 +1,30 @@
+﻿  command.c
+C:\my\code\vs\FTPpj\FTPclient\command.h(37,1): warning C4005: “HELP_QUIT”: 宏重定义
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\um\winuser.h(12257,1): message : 参见“HELP_QUIT”的前一个定义
+C:\my\code\vs\FTPpj\FTPclient\command.c(50,9): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(56,9): warning C4996: 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(66,22): warning C4996: 'open': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _open. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(71,22): warning C4996: 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(73,13): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(79,5): warning C4996: 'close': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _close. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(91,9): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(98,22): warning C4996: 'open': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _open. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(106,22): warning C4996: 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(109,13): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(133,28): warning C4090: “函数”: 不同的“const”限定符
+C:\my\code\vs\FTPpj\FTPclient\command.c(126,9): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(133,12): warning C4996: 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(152,62): warning C4474: printf: 格式字符串中传递的参数太多
+C:\my\code\vs\FTPpj\FTPclient\command.c(152,62): message : 占位符和其参数预计 0 可变参数，但提供的却是 1 参数
+C:\my\code\vs\FTPpj\FTPclient\command.c(160,62): warning C4474: printf: 格式字符串中传递的参数太多
+C:\my\code\vs\FTPpj\FTPclient\command.c(160,62): message : 占位符和其参数预计 0 可变参数，但提供的却是 1 参数
+C:\my\code\vs\FTPpj\FTPclient\command.c(200,28): warning C4090: “函数”: 不同的“const”限定符
+C:\my\code\vs\FTPpj\FTPclient\command.c(193,9): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(200,12): warning C4996: 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(221,28): warning C4090: “函数”: 不同的“const”限定符
+C:\my\code\vs\FTPpj\FTPclient\command.c(214,9): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(221,12): warning C4996: 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(242,28): warning C4090: “函数”: 不同的“const”限定符
+C:\my\code\vs\FTPpj\FTPclient\command.c(235,9): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(242,12): warning C4996: 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
+  FTPclient.vcxproj -> C:\my\code\vs\FTPpj\x64\Debug\FTPclient.exe
