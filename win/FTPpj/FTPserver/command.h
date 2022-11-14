@@ -48,6 +48,28 @@ typedef enum {
     SEM_ERR
 } Semanteme;
 
+
+typedef enum {
+    FILENAME, FAILDFIND, FILESIZE, READYDOWN, FILEPACKET, SUCCESS, FAILD, END,CANCEL, DOWNLOADING
+}Msg;
+
+#pragma pack(1)
+typedef struct {
+    Msg msg;
+    union MyUnion {
+        struct {
+            int fileSize;
+            char fileName[MAX_LEN - sizeof(int) * 2];
+        }fileInfo;
+        struct {
+            int dataBufSize;
+            int offset;
+            char dataBuf[MAX_LEN - sizeof(int) * 3];
+        }dataInfo;
+    };
+}Packet;
+#pragma pack()
+
 typedef struct{
     Semanteme sem;
     short arg_num;
@@ -56,7 +78,7 @@ typedef struct{
     bool (*function)();
 } Command;
 
-bool client_get(sockaddr_in, const char*);
+bool server_get(SOCKET, const char*);
 bool client_put(sockaddr_in, const char*);
 bool server_delete(SOCKET, const char*);
 bool server_ls(SOCKET ,const char*);
@@ -69,6 +91,7 @@ bool client_null(sockaddr_in, const char*);
 
 void help();
 
+int uploadToC(SOCKET s, Packet* packet);
 Semanteme get_semanteme(char*);
 Command get_command(const char*);
 

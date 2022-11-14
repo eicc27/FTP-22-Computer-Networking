@@ -1,6 +1,5 @@
 # include <stdio.h>
 # include "command.h"
-# include "util.h"
 
 sockaddr_in initialize(){
     printf("initializing ftp...\n");
@@ -28,6 +27,7 @@ bool client_ftp(int sockfd){
     Command cmd = get_command(args.argv[0]);
     //正常结束返回0，结束链接返回1，命令异常返回-1；
     int exitcode=cmd.function(sockfd, args.argc > 1 ? args.argv[1] : NULL);
+    printf("\n");
     return exitcode;
 }
 

@@ -1,10 +1,1 @@
-﻿  server.c
-C:\my\code\vs\FTPpj\FTPserver\command.h(37,1): warning C4005: “HELP_QUIT”: 宏重定义
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\um\winuser.h(12257,1): message : 参见“HELP_QUIT”的前一个定义
-C:\my\code\vs\FTPpj\FTPserver\server.c(6,27): warning C4047: “!=”:“SOCKET”与“void *”的间接级别不同
-C:\my\code\vs\FTPpj\FTPserver\server.c(23,14): warning C4047: “return”:“SOCKET”与“void *”的间接级别不同
-C:\my\code\vs\FTPpj\FTPserver\server.c(29,14): warning C4047: “return”:“SOCKET”与“void *”的间接级别不同
-C:\my\code\vs\FTPpj\FTPserver\server.c(39,14): warning C4047: “return”:“SOCKET”与“void *”的间接级别不同
-C:\my\code\vs\FTPpj\FTPserver\server.c(92,14): warning C4098: “connectToClient”:“void”函数返回值
-C:\my\code\vs\FTPpj\FTPserver\server.c(101,14): warning C4098: “connectToClient”:“void”函数返回值
-  FTPserver.vcxproj -> C:\my\code\vs\FTPpj\x64\Debug\FTPserver.exe
+﻿  FTPserver.vcxproj -> C:\my\code\vs\FTPpj\x64\Debug\FTPserver.exe

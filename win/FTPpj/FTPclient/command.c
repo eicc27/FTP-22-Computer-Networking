@@ -39,6 +39,51 @@ Here it asserts that the server returns a single 'N' character if the case happe
 */
 int client_get(int sockfd, const char *arg)
 {
+#ifdef _WIN32
+    //向服务端发送指令
+    char get_cmd[MAX_LEN] = { 0 };
+    strcpy_s(get_cmd, strlen(CMD_GET) + 1, CMD_GET);
+    strcat_s(get_cmd, strlen(CMD_GET) + 1 + strlen(" "), " ");
+    strcat_s(get_cmd, strlen(CMD_GET) + 1 + strlen(arg) + strlen(" "), arg);
+    if (send(sockfd, (char*)get_cmd, strlen(get_cmd) + 1, 0) <= 0) {
+        printf("Send error: Failed to send to the server.%d", WSAGetLastError());
+        return 1;
+    }
+    Packet packet = {0};
+    char* choose[20] = {0};
+    //从服务器端获得文件大小并决定是否下载
+    if (recv(sockfd, (char*)&packet, MAX_LEN, 0) > 0) {
+        switch (packet.msg) {
+            case FAILDFIND:
+                printf("文件不存在!");
+                break;
+            case FILESIZE:
+                printf("文件[%s]的大小为:%d字节,是否确定下载[y/n]?",packet.fileInfo.fileName,packet.fileInfo.fileSize);
+                gets_s(choose, sizeof(choose)-1);
+                //确认后进行内存申请和分断操作，内存申请失败或者不想下载则取消下载
+                if (strcmp(choose, "y") == 0 &&download(sockfd, &packet) == 0 ) {
+                    printf("下载完成");
+                    
+                }
+                else {
+                    packet.msg = CANCEL;
+                    if (send(sockfd, (char*)&packet, sizeof(Packet), 0) <= 0) {
+                        printf("Send error: Failed to send to the server.%d", WSAGetLastError());
+                        return 1;
+                    }
+                    printf("您取消了下载");
+                }
+                break;
+            default:
+                printf("Unknown message.");
+                break;
+        }
+    }
+    else {
+        printf("Recv error: Failed to recv to the server%d.", WSAGetLastError());
+    }
+#else
+
     // file buffer for storing the data server sent
     char *fileBuffer = (char *)calloc(MAX_LEN, sizeof(char));
     // local file
@@ -77,6 +122,7 @@ int client_get(int sockfd, const char *arg)
         }
     }
     close(fileLocal);
+#endif
     return 0;
 }
 
@@ -126,7 +172,7 @@ int client_delete(int sockfd, const char *arg)
     strcat_s(delete_cmd, strlen(CMD_DEL) + 1 + strlen(" "), " ");
     strcat_s(delete_cmd, strlen(CMD_DEL) + 1 + strlen(arg) + strlen(" "), arg);
     if (send(sockfd, (char*)delete_cmd, strlen(delete_cmd) + 1, 0) <= 0) {
-        printf("Send error: Failed to send to the server.%d\n", WSAGetLastError());
+        printf("Send error: Failed to send to the server.%d", WSAGetLastError());
         return 1;
     }
 
@@ -134,7 +180,7 @@ int client_delete(int sockfd, const char *arg)
         printf("%s", msg);
     }
     else {
-        printf("Recv error: Failed to recv to the server%d.\n", WSAGetLastError());
+        printf("Recv error: Failed to recv to the server%d.", WSAGetLastError());
     }
 #else
     if (write(sockfd, arg, MAX_LEN) < 0)
@@ -164,14 +210,14 @@ int client_ls(int sockfd, const char *arg)
     // client `ls`---> server
 #ifdef _WIN32
     if (send(sockfd, CMD_LS, strlen(CMD_LS)+1, 0) <= 0) {
-        printf("Send error: Failed to send to the server%d\n", WSAGetLastError());
+        printf("Send error: Failed to send to the server%d", WSAGetLastError());
         return -1;
     }
     char fileNameBuffer[MAX_LEN] = {0};
     if(recv(sockfd, (char*)fileNameBuffer, MAX_LEN, 0)>0) {
-        printf("%s\n", fileNameBuffer);
+        printf("%s", fileNameBuffer);
     }else {
-        printf("Recv error: Failed to recv to the server%d\n", WSAGetLastError());
+        printf("Recv error: Failed to recv to the server%d", WSAGetLastError());
     }
 #else
     if (write(sockfd, CMD_LS, MAX_LEN) < 0)
@@ -207,15 +253,15 @@ int client_cd(int sockfd, const char *arg)
     strcat_s(position, strlen(CMD_CD) + 1 + strlen(" "), " ");
     strcat_s(position, strlen(CMD_CD) + 1 + strlen(arg) + strlen(" "),arg);
     if (send(sockfd, (char*)position, strlen(position) + 1, 0) <= 0) {
-        printf("Send error: Failed to send to the server.%d\n", WSAGetLastError());
+        printf("Send error: Failed to send to the server.%d", WSAGetLastError());
         return -1;
     }
     
     if (recv(sockfd, (char*)msg, MAX_LEN, 0) > 0) {
-        
+        printf("%s", msg);
     }
     else {
-        printf("Recv error: Failed to recv to the server%d.\n", WSAGetLastError());
+        printf("Recv error: Failed to recv to the server%d.", WSAGetLastError());
     }
 #else
     
@@ -245,7 +291,7 @@ int client_mkdir(int sockfd, const char *arg)
     strcat_s(folderName, strlen(CMD_MKD) + 1 + strlen(" "), " ");
     strcat_s(folderName, strlen(CMD_MKD) + 1 + strlen(arg) + strlen(" "), arg);
     if (send(sockfd, (char*)folderName, strlen(folderName) + 1, 0) <= 0) {
-        printf("Send error: Failed to send to the server.%d\n", WSAGetLastError());
+        printf("Send error: Failed to send to the server.%d", WSAGetLastError());
         return -1;
     }
 
@@ -253,7 +299,7 @@ int client_mkdir(int sockfd, const char *arg)
         printf("%s", msg);
     }
     else {
-        printf("Recv error: Failed to recv to the server%d.\n", WSAGetLastError());
+        printf("Recv error: Failed to recv to the server%d.", WSAGetLastError());
     }
 #else
     // client arg ---> server
@@ -279,7 +325,7 @@ int client_pwd(int sockfd, const char *arg)
 
 #ifdef _WIN32
     if (send(sockfd, CMD_PWD, strlen(CMD_PWD) + 1, 0) <= 0) {
-        printf("Send error: Failed to send to the server%d\n", WSAGetLastError());
+        printf("Send error: Failed to send to the server%d", WSAGetLastError());
         return -1;
     }
     char position[MAX_LEN] = { 0 };
@@ -287,7 +333,7 @@ int client_pwd(int sockfd, const char *arg)
         printf("%s", position);
     }
     else {
-        printf("Recv error: Failed to recv to the server%d\n", WSAGetLastError());
+        printf("Recv error: Failed to recv to the server%d", WSAGetLastError());
     }
 #else
     char buffer[MAXPATH];
@@ -332,4 +378,63 @@ void help()
 {
     for_i_in_range(CMD_NUM)
         printf("%8s -- %s\n", commands[i].cmd, commands[i].help);
+}
+
+
+int download(int sockfd,Packet* packet) {
+    int fileSize = packet->fileInfo.fileSize;
+    char fileName[200] = { 0 };
+    strcpy_s(fileName,strlen(packet->fileInfo.fileName)+1, packet->fileInfo.fileName);
+    char * fileBuf = calloc(sizeof(packet->dataInfo.dataBuf), sizeof(char));
+    if (fileBuf == NULL) {
+        printf("空间申请失败\n");
+        return -1;
+    }
+    else {
+        packet->msg = READYDOWN;
+        if (SOCKET_ERROR == send(sockfd, (char*)packet, sizeof(Packet), 0)) {
+            printf("send error: %d", WSAGetLastError());
+            return -1;
+        }
+    }
+    Packet recvPacket = { 0 };
+    FILE* pwrite;
+    //判断是否能打开文件
+    errno_t err = fopen_s(&pwrite,fileName, "wb");
+    if (pwrite == NULL) {
+        printf("write file error..\n");
+        return -1;
+    }
+    //接收从服务器发来的包
+    printf("正在下载...\n");
+    int speed=0;
+    while (recvPacket.dataInfo.offset <= fileSize) {
+        if (recv(sockfd, (char*)&recvPacket, sizeof(Packet), 0) <= 0) {
+            printf("send error: %d", WSAGetLastError());
+            fclose(pwrite);
+            return -1;
+        }
+        //将包内内容复制到缓存
+        memcpy(fileBuf, recvPacket.dataInfo.dataBuf, recvPacket.dataInfo.dataBufSize);
+
+        //将缓存内容写入文件
+        fwrite(fileBuf, sizeof(char), recvPacket.dataInfo.dataBufSize, pwrite);
+        //全部传输完成后退出
+        if (speed != recvPacket.dataInfo.offset*100 / fileSize) {
+            speed = recvPacket.dataInfo.offset*100 / fileSize;
+            printf("%d\%", speed);
+            fflush(stdout);
+        }
+        
+        if (recvPacket.dataInfo.offset == fileSize) {
+            break;
+        }
+        
+    }
+    
+    fclose(pwrite);
+
+    free(fileBuf);
+    
+    return 0;
 }

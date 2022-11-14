@@ -1,11 +1,4 @@
-﻿  client.c
-C:\my\code\vs\FTPpj\FTPclient\client.c(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-C:\my\code\vs\FTPpj\FTPclient\command.h(37,1): warning C4005: “HELP_QUIT”: 宏重定义
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\um\winuser.h(12257,1): message : 参见“HELP_QUIT”的前一个定义
-C:\my\code\vs\FTPpj\FTPclient\client.c(11,28): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
-C:\my\code\vs\FTPpj\FTPclient\client.c(24,5): warning C4996: 'scanf': This function or variable may be unsafe. Consider using scanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\my\code\vs\FTPpj\FTPclient\client.c(30,9): warning C4047: “初始化”:“int”与“void *”的间接级别不同
-  command.c
+﻿  command.c
 C:\my\code\vs\FTPpj\FTPclient\command.h(37,1): warning C4005: “HELP_QUIT”: 宏重定义
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\um\winuser.h(12257,1): message : 参见“HELP_QUIT”的前一个定义
 C:\my\code\vs\FTPpj\FTPclient\command.c(8,5): warning C4047: “初始化”:“void *(__cdecl *)(int,const char *)”与“int (__cdecl *)(int,const char *)”的间接级别不同
@@ -18,20 +11,20 @@ C:\my\code\vs\FTPpj\FTPclient\command.c(14,5): warning C4047: “初始化”:�
 C:\my\code\vs\FTPpj\FTPclient\command.c(15,5): warning C4047: “初始化”:“void *(__cdecl *)(int,const char *)”与“int (__cdecl *)(int,const char *)”的间接级别不同
 C:\my\code\vs\FTPpj\FTPclient\command.c(17,31): warning C4047: “初始化”:“void *(__cdecl *)(int,const char *)”与“int (__cdecl *)(int,const char *)”的间接级别不同
 C:\my\code\vs\FTPpj\FTPclient\command.c(18,30): warning C4047: “初始化”:“void *(__cdecl *)(int,const char *)”与“int (__cdecl *)(int,const char *)”的间接级别不同
-C:\my\code\vs\FTPpj\FTPclient\command.c(50,9): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
-C:\my\code\vs\FTPpj\FTPclient\command.c(56,9): warning C4996: 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
-C:\my\code\vs\FTPpj\FTPclient\command.c(66,22): warning C4996: 'open': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _open. See online help for details.
-C:\my\code\vs\FTPpj\FTPclient\command.c(71,22): warning C4996: 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
-C:\my\code\vs\FTPpj\FTPclient\command.c(73,13): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
-C:\my\code\vs\FTPpj\FTPclient\command.c(79,5): warning C4996: 'close': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _close. See online help for details.
-C:\my\code\vs\FTPpj\FTPclient\command.c(89,9): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
-C:\my\code\vs\FTPpj\FTPclient\command.c(96,22): warning C4996: 'open': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _open. See online help for details.
-C:\my\code\vs\FTPpj\FTPclient\command.c(104,22): warning C4996: 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
-C:\my\code\vs\FTPpj\FTPclient\command.c(107,13): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
-C:\my\code\vs\FTPpj\FTPclient\command.c(128,60): warning C4267: “函数”: 从“size_t”转换到“int”，可能丢失数据
-C:\my\code\vs\FTPpj\FTPclient\command.c(166,44): warning C4267: “函数”: 从“size_t”转换到“int”，可能丢失数据
-C:\my\code\vs\FTPpj\FTPclient\command.c(209,56): warning C4267: “函数”: 从“size_t”转换到“int”，可能丢失数据
-C:\my\code\vs\FTPpj\FTPclient\command.c(247,60): warning C4267: “函数”: 从“size_t”转换到“int”，可能丢失数据
-C:\my\code\vs\FTPpj\FTPclient\command.c(281,47): warning C4267: “函数”: 从“size_t”转换到“int”，可能丢失数据
-  正在生成代码...
+C:\my\code\vs\FTPpj\FTPclient\command.c(48,54): warning C4267: “函数”: 从“size_t”转换到“int”，可能丢失数据
+C:\my\code\vs\FTPpj\FTPclient\command.c(62,30): warning C4047: “函数”:“char *”与“char *[20]”的间接级别不同
+C:\my\code\vs\FTPpj\FTPclient\command.c(62,24): warning C4024: “gets_s”: 形参和实参 1 的类型不同
+C:\my\code\vs\FTPpj\FTPclient\command.c(64,34): warning C4047: “函数”:“const char *”与“char *[20]”的间接级别不同
+C:\my\code\vs\FTPpj\FTPclient\command.c(64,28): warning C4024: “strcmp”: 形参和实参 1 的类型不同
+C:\my\code\vs\FTPpj\FTPclient\command.c(135,9): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(142,22): warning C4996: 'open': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _open. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(150,22): warning C4996: 'read': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _read. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(153,13): warning C4996: 'write': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _write. See online help for details.
+C:\my\code\vs\FTPpj\FTPclient\command.c(174,60): warning C4267: “函数”: 从“size_t”转换到“int”，可能丢失数据
+C:\my\code\vs\FTPpj\FTPclient\command.c(212,44): warning C4267: “函数”: 从“size_t”转换到“int”，可能丢失数据
+C:\my\code\vs\FTPpj\FTPclient\command.c(255,56): warning C4267: “函数”: 从“size_t”转换到“int”，可能丢失数据
+C:\my\code\vs\FTPpj\FTPclient\command.c(293,60): warning C4267: “函数”: 从“size_t”转换到“int”，可能丢失数据
+C:\my\code\vs\FTPpj\FTPclient\command.c(327,47): warning C4267: “函数”: 从“size_t”转换到“int”，可能丢失数据
+C:\my\code\vs\FTPpj\FTPclient\command.c(425,20): warning C4129: “%”: 不可识别的字符转义序列
+C:\my\code\vs\FTPpj\FTPclient\command.c(425,20): warning C4778: “printf”: 格式字符串“%”未终止
   FTPclient.vcxproj -> C:\my\code\vs\FTPpj\x64\Debug\FTPclient.exe

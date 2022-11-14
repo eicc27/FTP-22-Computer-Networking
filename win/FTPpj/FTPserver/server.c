@@ -1,5 +1,5 @@
 #include "server.h"
-char path[100];
+char arg[100];
 int main() {
 	printf("Hello!\n");
 	SOCKET server_socket=initialize();
@@ -56,7 +56,7 @@ bool listenToClient(SOCKET s) {
 		return false;
 	}
 	else {
-		printf("cmd:%s\n", cmd);
+		printf("\ncmd:%s\n", cmd);
 		Arguments args = split_string(cmd);
 		/*if (args.argv[1] != NULL) {
 			printf("客户端输入命令为:%s %s\n", args.argv[0], args.argv[1]);
@@ -68,15 +68,15 @@ bool listenToClient(SOCKET s) {
 		for_i_in_range(CMD_NUM) {
 			if (!strcmp(args.argv[0], commands[i].cmd)) {
 				if (args.argv[1] != NULL) {
-					memset(path, 0, sizeof(path));
-					strcpy_s(path, strlen(args.argv[1]) + 1, args.argv[1]);
-					if (path[0] == '.') {
-						strcat_s(path, strlen(path) + 1 + strlen("\\"), "\\");
-						printf("cd path:%s\n", path);
+					memset(arg, 0, sizeof(arg));
+					strcpy_s(arg, strlen(args.argv[1]) + 1, args.argv[1]);
+					if (arg[0] == '.') {
+						strcat_s(arg, strlen(arg) + 1 + strlen("\\"), "\\");
+						printf("cd path:%s\n", arg);
 					}
 				}
 				
-				commands[i].function(s, path);
+				commands[i].function(s, arg);
 			}
 		}
 	}
@@ -102,8 +102,8 @@ void connectToClient(SOCKET s) {
 	}
 	printf("客户端链接成功\n");
 	printf("正在监听...\n");
-	memset(path, 0, sizeof(path));
-	strcpy_s(path, strlen(".") + 1, ".");
+	memset(arg, 0, sizeof(arg));
+	strcpy_s(arg, strlen(".") + 1, ".");
 	while(listenToClient(clifd)) {
 	}
 	return;

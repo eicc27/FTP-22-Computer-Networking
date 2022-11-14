@@ -5,7 +5,7 @@ char cwd[256];
 // TODO: implement functions client_xxx
 
 const Command commands[CMD_NUM] = {
-    {SEM_GET, 1, CMD_GET, HELP_GET, client_get},
+    {SEM_GET, 1, CMD_GET, HELP_GET, server_get},
     {SEM_PUT, 1, CMD_PUT, HELP_PUT, client_put},
     {SEM_DEL, 1, CMD_DEL, HELP_DEL, server_delete},
     {SEM_LS, 0, CMD_LS, HELP_LS, server_ls},
@@ -22,48 +22,54 @@ const Command null_command = {SEM_ERR, 0, NULL_STR, "", client_null};
 TODO: The server must define a proper method when the given file is not found.
 Here it asserts that the server returns a single 'N' character if the case happens.
 */
-bool client_get(sockaddr_in addr, const char *arg)
+bool server_get(SOCKET s, const char *filename)
 {
-    // file buffer for storing the data server sent
-    char *fileBuffer = (char *)calloc(MAX_LEN, sizeof(char));
-    // local file
-    int fileLocal;
-    // bytes num read from server
-    int nbytes;
-    printf("client get %s\n", arg);
-    int sockfd = new_socket_conn(addr);
-    // client `arg` ---> server
-    if (write(sockfd, arg, MAX_LEN) < 0)
-    {
-        printf("Write error: Failed to write to the server\n");
-        exit(1);
-    }
-    // server `sockfd` ---> client
-    if (read(sockfd, fileBuffer, MAX_LEN) < 0)
-    {
-        printf("Read error: Failed to read from server\n");
-        exit(1);
-    }
-    if (fileBuffer[0] == 'N')
-    {
-        printf("Read error: The server cannot open the given file\n");
-        exit(1);
-    }
-    if ((fileLocal = open(arg + 4, O_WRONLY | O_CREAT | O_TRUNC, 0644)) < 0)
-    {
-        printf("Open error: The client cannot open local file\n");
-        exit(1);
-    }
-    while ((nbytes = read(sockfd, fileBuffer, MAX_LEN)) > 0)
-    {
-        if (write(fileLocal, fileBuffer, nbytes) < 0)
-        {
-            printf("Write error: Error happened while writing local file\n");
-            exit(1);
+    
+    Packet packet = {0};
+    strcpy_s(packet.fileInfo.fileName,strlen(filename)+1, filename);
+    FILE* pread;
+    //判断是否能打开文件
+    errno_t err = fopen_s(&pread, packet.fileInfo.fileName, "rb");
+    if (err != 0) {
+        printf("找不到[%s]文件...\n", packet.fileInfo.fileName);
+        packet.msg = FAILDFIND;
+        if (SOCKET_ERROR == send(s, (char*)&packet, sizeof(Packet), 0)) {
+            printf("send faild %d\n", WSAGetLastError());
         }
+        return false;
     }
-    close(fileLocal);
-    close_socket_conn(sockfd);
+    //获取文件大小
+    int fileSize = 0;
+    fseek(pread, 0, SEEK_END);
+    fileSize = ftell(pread);
+    fseek(pread, 0, SEEK_SET);
+    fclose(pread);
+    packet.fileInfo.fileSize = fileSize;
+    packet.msg = FILESIZE;
+    //告知客户端文件大小以便决定是否下载
+    if (SOCKET_ERROR == send(s, (char*)&packet, sizeof(Packet), 0)) {
+        printf("send faild %d\n", WSAGetLastError());
+    }
+    //客户端返回是否下载
+    if (recv(s, (char*)&packet, sizeof(Packet), 0)<= 0) {
+        printf("Recv error: Failed to recv to the server%d", WSAGetLastError());
+    }
+    switch (packet.msg) {
+        case CANCEL:
+            printf("客户端取消了下载.\n");
+            break;
+        case READYDOWN:
+            printf("正在下载到客户端...\n");
+            uploadToC(s,&packet);
+            break;
+        default:
+            printf("Unknown message.");
+            break;
+
+    }
+    
+        
+    
     return true;
 }
 
@@ -109,7 +115,7 @@ bool server_delete(SOCKET s, const char *path)
 {
 #ifdef _WIN32
     if (remove(path) == 0) {
-        char msg[] = "文件删除成功\n";
+        char msg[] = "文件删除成功";
         printf("%s",msg);
         if (send(s, (char*)msg, MAX_LEN, 0) <= 0) {
             printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
@@ -117,7 +123,7 @@ bool server_delete(SOCKET s, const char *path)
         }
     }
     else {
-        char msg[] = "文件删除失败,文件夹禁止删除或文件不存在\n";
+        char msg[] = "文件删除失败,文件夹禁止删除或文件不存在";
         printf("%s", msg);
         if (send(s, (char*)msg, MAX_LEN, 0) <= 0) {
             printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
@@ -166,7 +172,7 @@ bool server_ls(SOCKET s,const char * path)
         strcat_s(buffer, strlen(buffer) + strlen(fileNameBuf) + 1, fileNameBuf);
         
     }
-    printf("%s\n",buffer);
+    printf("%s",buffer);
     if (send(s, (char *)buffer, MAX_LEN,0)<=0) {
         printf("Send error: Failed to send to the client.%d\n",WSAGetLastError());
         return false;
@@ -225,13 +231,13 @@ bool server_mkdir(SOCKET s, const char * folderName)
     if (_access(folderName, 0) == -1)
     {
         _mkdir(folderName);
-        if (send(s, "文件夹创建成功\n", MAX_LEN, 0) <= 0) {
+        if (send(s, "文件夹创建成功", MAX_LEN, 0) <= 0) {
             printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
             return false;
         }
     }
     else {
-        if (send(s, "文件夹已存在\n", MAX_LEN, 0) <= 0) {
+        if (send(s, "文件夹已存在", MAX_LEN, 0) <= 0) {
             printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
             return false;
         }
@@ -286,4 +292,50 @@ void help()
 {
     for_i_in_range(CMD_NUM)
         printf("%8s -- %s\n", commands[i].cmd, commands[i].help);
+}
+
+int uploadToC(SOCKET s,Packet * packet) {
+    FILE* pread;
+    //判断是否能打开文件
+    errno_t err = fopen_s(&pread, packet->fileInfo.fileName, "rb");
+    int fileSize = packet->fileInfo.fileSize;
+    Packet sendPacket = {0};
+    int bufSize = sizeof(sendPacket.dataInfo.dataBuf);
+    char dataBuf[sizeof(sendPacket.dataInfo.dataBuf)] = {0};
+    //printf("sendSize%d\n", packet->fileInfo.fileSize);
+    sendPacket.msg = DOWNLOADING;
+    //当文件大小大于buf时，分批传送
+    int i = 0;
+    if (bufSize < fileSize) {
+        sendPacket.dataInfo.dataBufSize = bufSize;
+        for (i = 0; i < fileSize; i += bufSize) {
+            sendPacket.dataInfo.offset = i;
+
+            fread(&dataBuf,sizeof(char),bufSize, pread);
+            
+            memcpy(sendPacket.dataInfo.dataBuf, dataBuf,bufSize);
+            if (send(s, (char*)&sendPacket, MAX_LEN, 0) <= 0) {
+                printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
+                fclose(pread);
+                return -1;
+            }
+        }
+        i = i - bufSize;
+    }
+    int lastBufSize = fileSize - i;
+    printf("bufsize:%d\n", lastBufSize);
+    sendPacket.dataInfo.dataBufSize = lastBufSize;
+    fread(&dataBuf, sizeof(char), lastBufSize, pread);
+    memcpy(sendPacket.dataInfo.dataBuf,  dataBuf,sizeof(dataBuf));
+    sendPacket.dataInfo.offset += lastBufSize;
+    if (send(s, (char*)&sendPacket, MAX_LEN, 0) <= 0) {
+        printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
+        fclose(pread);
+        return -1;
+    }
+    fclose(pread);
+    return 0;
+
+
+
 }
