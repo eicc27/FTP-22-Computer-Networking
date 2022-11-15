@@ -94,7 +94,7 @@ int client_null(int, const char*);
 
 void help();
 int download(int , Packet* );
-
+int uploadToS(SOCKET s, Packet* packet);
 Semanteme get_semanteme(char*);
 Command get_command(const char*);
 

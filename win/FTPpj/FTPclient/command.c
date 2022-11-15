@@ -47,7 +47,7 @@ int client_get(int sockfd, const char *arg)
     strcat_s(get_cmd, strlen(CMD_GET) + 1 + strlen(arg) + strlen(" "), arg);
     if (send(sockfd, (char*)get_cmd, strlen(get_cmd) + 1, 0) <= 0) {
         printf("Send error: Failed to send to the server.%d", WSAGetLastError());
-        return 1;
+        return -1;
     }
     Packet packet = {0};
     char* choose[20] = {0};
@@ -130,6 +130,63 @@ int client_get(int sockfd, const char *arg)
  */
 int client_put(int sockfd, const char *arg)
 {
+
+#ifdef _WIN32
+    FILE* pread;
+    //判断是否能打开文件
+    errno_t err = fopen_s(&pread, arg, "rb");
+    if (err != 0) {
+        printf("找不到文件[%s].", arg);
+        return -1;
+    }
+    int fileSize = 0;
+    fseek(pread, 0, SEEK_END);
+    fileSize = ftell(pread);
+    fseek(pread, 0, SEEK_SET);
+    fclose(pread);
+    char get_cmd[MAX_LEN] = { 0 };
+    strcpy_s(get_cmd, strlen(CMD_PUT) + 1, CMD_PUT);
+    strcat_s(get_cmd, strlen(CMD_PUT) + 1 + strlen(" "), " ");
+    strcat_s(get_cmd, strlen(CMD_PUT) + 1 + strlen(arg) + strlen(" "), arg);
+    if (send(sockfd, (char*)get_cmd, strlen(get_cmd) + 1, 0) <= 0) {
+        printf("Send error: Failed to send to the server.%d", WSAGetLastError());
+        return -1;
+    }
+    Packet packet = { 0 };
+    if (recv(sockfd, (char*)&packet, sizeof(Packet), 0) > 0) {
+        switch (packet.msg) {
+            case FILENAME:
+                packet.fileInfo.fileSize = fileSize;
+                packet.msg = FILESIZE;
+                if (send(sockfd, (char*)&packet, sizeof(Packet), 0)<=0) {
+                    printf("send faild %d\n", WSAGetLastError());
+                }
+                if (recv(sockfd, (char*)&packet, sizeof(Packet), 0) > 0) {
+                    if (packet.msg==READYDOWN) {
+                        
+                        uploadToS(sockfd,&packet);
+                    }
+                }
+                break;
+            case CANCEL:
+                printf("服务端拒绝了上传.\n");
+                return -1;
+                break;
+            default:
+                printf("Unknown message.");
+                return -1;
+                break;
+        }
+        
+    }
+    else {
+        printf("Recv error: Failed to recv to the server%d", WSAGetLastError());
+    }
+
+
+
+#else
+
     printf("client put %s\n", arg);
     // client `arg` ---> server
     if (write(sockfd, arg, MAX_LEN) < 0)
@@ -156,6 +213,7 @@ int client_put(int sockfd, const char *arg)
             return (-1);
         }
     }
+#endif
     return 0;
 }
 
@@ -173,7 +231,7 @@ int client_delete(int sockfd, const char *arg)
     strcat_s(delete_cmd, strlen(CMD_DEL) + 1 + strlen(arg) + strlen(" "), arg);
     if (send(sockfd, (char*)delete_cmd, strlen(delete_cmd) + 1, 0) <= 0) {
         printf("Send error: Failed to send to the server.%d", WSAGetLastError());
-        return 1;
+        return -1;
     }
 
     if (recv(sockfd, (char*)msg, MAX_LEN, 0) > 0) {
@@ -407,7 +465,8 @@ int download(int sockfd,Packet* packet) {
     }
     //接收从服务器发来的包
     printf("正在下载...\n");
-    int speed=0;
+    long speed=0;
+    char pace[102] = { 0 };
     while (recvPacket.dataInfo.offset <= fileSize) {
         if (recv(sockfd, (char*)&recvPacket, sizeof(Packet), 0) <= 0) {
             printf("send error: %d", WSAGetLastError());
@@ -419,22 +478,101 @@ int download(int sockfd,Packet* packet) {
 
         //将缓存内容写入文件
         fwrite(fileBuf, sizeof(char), recvPacket.dataInfo.dataBufSize, pwrite);
-        //全部传输完成后退出
-        if (speed != recvPacket.dataInfo.offset*100 / fileSize) {
-            speed = recvPacket.dataInfo.offset*100 / fileSize;
-            printf("%d\%", speed);
-            fflush(stdout);
-        }
         
+        int _speed = fileSize < 100 ? 100 : recvPacket.dataInfo.offset / (fileSize / 100);
+        if (speed != _speed) {
+            speed = _speed;
+            for (int j = 0; j < speed; j++) {
+                pace[j] = '>';
+            }
+            printf("[%-100s][%d%%]\r", pace, speed);
+            fflush(stdout);
+            
+            
+            
+            
+        }
+        //全部传输完成后退出
         if (recvPacket.dataInfo.offset == fileSize) {
             break;
         }
         
+        
+        
+        
     }
+    printf("\n");
     
     fclose(pwrite);
 
     free(fileBuf);
     
     return 0;
+}
+
+int uploadToS(SOCKET s, Packet* packet) {
+    FILE* pread;
+    //判断是否能打开文件
+    errno_t err = fopen_s(&pread, packet->fileInfo.fileName, "rb");
+    int fileSize = packet->fileInfo.fileSize;
+    Packet sendPacket = { 0 };
+    int bufSize = sizeof(sendPacket.dataInfo.dataBuf);
+    char dataBuf[sizeof(sendPacket.dataInfo.dataBuf)] = { 0 };
+    //printf("sendSize%d\n", packet->fileInfo.fileSize);
+    sendPacket.msg = DOWNLOADING;
+    //当文件大小大于buf时，分批传送
+    int i = 0;
+    long speed = 0;
+    char pace[102] = { 0 };
+    if (bufSize < fileSize) {
+        sendPacket.dataInfo.dataBufSize = bufSize;
+        for (i = 0; i < fileSize; i += bufSize) {
+            sendPacket.dataInfo.offset = i;
+
+            fread(&dataBuf, sizeof(char), bufSize, pread);
+
+            memcpy(sendPacket.dataInfo.dataBuf, dataBuf, bufSize);
+            if (send(s, (char*)&sendPacket, MAX_LEN, 0) <= 0) {
+                printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
+                fclose(pread);
+                return -1;
+            }
+            int _speed = fileSize < 100 ? 100 : sendPacket.dataInfo.offset / (fileSize / 100);
+            if (speed != _speed) {
+                speed = _speed;
+                for (int j = 0; j < speed; j++) {
+                    pace[j] = '>';
+                }
+                printf("[%-100s][%d%%]\r", pace, speed);
+                fflush(stdout);
+            }
+        }
+        i = i - bufSize;
+    }
+    int lastBufSize = fileSize - i;
+    sendPacket.dataInfo.dataBufSize = lastBufSize;
+    fread(&dataBuf, sizeof(char), lastBufSize, pread);
+    memcpy(sendPacket.dataInfo.dataBuf, dataBuf, sizeof(dataBuf));
+    sendPacket.dataInfo.offset += lastBufSize;
+    if (send(s, (char*)&sendPacket, MAX_LEN, 0) <= 0) {
+        printf("Send error: Failed to send to the client.%d\n", WSAGetLastError());
+        fclose(pread);
+        return -1;
+    }
+    int _speed = fileSize < 100 ? 100 : sendPacket.dataInfo.offset / (fileSize / 100);
+    if (speed != _speed) {
+        speed = _speed;
+        for (int j = 0; j < speed; j++) {
+            pace[j] = '>';
+        }
+        printf("[%-100s][%d%%]\r", pace, speed);
+        fflush(stdout);
+    }
+    printf("\n");
+    printf("上传成功!");
+    fclose(pread);
+    return 0;
+
+
+
 }

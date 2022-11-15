@@ -15,7 +15,7 @@ sockaddr_in initialize(){
 }
 
 // Read command lines and react.
-bool client_ftp(int sockfd){
+int client_ftp(int sockfd){
     printf("\n(ftp) ");
     client_pwd(sockfd, NULL);
     printf(" > ");
@@ -27,7 +27,7 @@ bool client_ftp(int sockfd){
     Command cmd = get_command(args.argv[0]);
     //正常结束返回0，结束链接返回1，命令异常返回-1；
     int exitcode=cmd.function(sockfd, args.argc > 1 ? args.argv[1] : NULL);
-    printf("\n");
+    printf("\n",exitcode);
     return exitcode;
 }
 

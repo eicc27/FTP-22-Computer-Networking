@@ -79,7 +79,7 @@ typedef struct{
 } Command;
 
 bool server_get(SOCKET, const char*);
-bool client_put(sockaddr_in, const char*);
+bool server_put(SOCKET, const char*);
 bool server_delete(SOCKET, const char*);
 bool server_ls(SOCKET ,const char*);
 bool server_cd(SOCKET , const char*);

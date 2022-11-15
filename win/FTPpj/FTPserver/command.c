@@ -6,7 +6,7 @@ char cwd[256];
 
 const Command commands[CMD_NUM] = {
     {SEM_GET, 1, CMD_GET, HELP_GET, server_get},
-    {SEM_PUT, 1, CMD_PUT, HELP_PUT, client_put},
+    {SEM_PUT, 1, CMD_PUT, HELP_PUT, server_put},
     {SEM_DEL, 1, CMD_DEL, HELP_DEL, server_delete},
     {SEM_LS, 0, CMD_LS, HELP_LS, server_ls},
     {SEM_CD, 1, CMD_CD, HELP_CD, server_cd},
@@ -75,36 +75,30 @@ bool server_get(SOCKET s, const char *filename)
 
 /*Run `put` command to put(upload) a given file to the server's given directory.
  */
-bool client_put(sockaddr_in addr, const char *arg)
+bool server_put(SOCKET s, const char* filename)
 {
-    printf("client put %s\n", arg);
-    int sockfd = new_socket_conn(addr);
-    // client `arg` ---> server
-    if (write(sockfd, arg, MAX_LEN) < 0)
-    {
-        printf("Write error: Failed to write to the server\n");
-        exit(1);
+    Packet packet = { 0 };
+    strcpy_s(packet.fileInfo.fileName, strlen(filename) + 1, filename);
+    packet.msg = FILENAME;
+    printf("filename:%s\n", packet.fileInfo.fileName);
+    if (SOCKET_ERROR == send(s, (char*)&packet, sizeof(Packet), 0)) {
+        printf("send faild %d\n", WSAGetLastError());
     }
-    // open the new local file
-    int fileLocal;
-    if ((fileLocal = open(arg + 4, O_RDONLY)) < 0)
-    {
-        printf("Open error: unable to open local file\n");
-        exit(-1);
+    if (recv(s, (char*)&packet, sizeof(Packet), 0) <= 0) {
+        printf("Recv error: Failed to recv to the server%d", WSAGetLastError());
     }
-    // read N bytes from `fileLocal`...
-    int nbytes;
-    char *fileBuffer = (char *)calloc(MAX_LEN, sizeof(char));
-    while ((nbytes = read(fileLocal, fileBuffer, MAX_LEN)) > 0)
-    {
-        // ...and write into the socket
-        if (write(sockfd, fileBuffer, nbytes) < 0)
-        {
-            printf("Write error: Failed to write into socket\n");
-            return (-1);
-        }
+    
+
+    printf("fileSize:%d\n", packet.fileInfo.fileSize);
+    printf("空间足够\n");
+    packet.msg = READYDOWN;
+    if (send(s, (char*)&packet, sizeof(Packet), 0)<=0) {
+        printf("send faild %d\n", WSAGetLastError());
     }
-    close_socket_conn(sockfd);
+    
+    if (download(s, &packet) == 0) {
+            printf("下载完成.");
+    };
     return true;
 }
 
@@ -292,6 +286,71 @@ void help()
 {
     for_i_in_range(CMD_NUM)
         printf("%8s -- %s\n", commands[i].cmd, commands[i].help);
+}
+
+int download(SOCKET s, Packet* packet) {
+    Packet recvPacket = { 0 };
+    FILE* pwrite;
+    char fileName[50] = { 0 };
+    strcpy_s(fileName, strlen(packet->fileInfo.fileName) + 1, packet->fileInfo.fileName);
+    int fileSize = packet->fileInfo.fileSize;
+    char* fileBuf = calloc(sizeof(packet->dataInfo.dataBuf), sizeof(char));
+    if (fileBuf == NULL) {
+        printf("空间申请失败\n");
+        return -1;
+    }
+    //判断是否能打开文件
+    printf("fileName:%s\n", packet->fileInfo.fileName);
+    errno_t err = fopen_s(&pwrite, fileName, "wb");
+    if (pwrite == NULL) {
+        printf("write file error..\n");
+        return -1;
+    }
+    //接收从服务器发来的包
+    printf("正在下载...\n");
+    long speed = 0;
+    char pace[102] = { 0 };
+    while (recvPacket.dataInfo.offset <= fileSize) {
+        if (recv(s, (char*)&recvPacket, sizeof(Packet), 0) <= 0) {
+            printf("send error: %d", WSAGetLastError());
+            fclose(pwrite);
+            return -1;
+        }
+        //将包内内容复制到缓存
+        memcpy(fileBuf, recvPacket.dataInfo.dataBuf, recvPacket.dataInfo.dataBufSize);
+
+        //将缓存内容写入文件
+        fwrite(fileBuf, sizeof(char), recvPacket.dataInfo.dataBufSize, pwrite);
+
+        int _speed = fileSize < 100 ? 100 : recvPacket.dataInfo.offset / (fileSize / 100);
+        if (speed != _speed) {
+            speed = _speed;
+            for (int j = 0; j < speed; j++) {
+                pace[j] = '>';
+            }
+            printf("[%-100s][%d%%]\r", pace, speed);
+            fflush(stdout);
+
+
+
+
+        }
+        //全部传输完成后退出
+        if (recvPacket.dataInfo.offset == fileSize) {
+            break;
+        }
+
+
+
+
+    }
+    printf("\n");
+
+    fclose(pwrite);
+
+    free(fileBuf);
+
+    return 0;
 }
 
 int uploadToC(SOCKET s,Packet * packet) {
