@@ -1,6 +1,7 @@
 #include "language_server.h"
 #include "colored_string.h"
 #include <stdlib.h>
+#include <sys/stat.h>
 #ifdef __linux__
 #include <bits/pthreadtypes.h>
 #include <dirent.h>
@@ -135,6 +136,16 @@ int isdir(char *cwd, char *dir) {
       if (strcmp(ent->d_name, dir) == 0)
         return 1;
   }
+  return 0;
+}
+
+int _isdir(char *dir) {
+  struct stat s;
+  int result = stat(dir, &s);
+  if (result != 0)
+    return 0;
+  if (s.st_mode & S_IFDIR)
+    return 1;
   return 0;
 }
 

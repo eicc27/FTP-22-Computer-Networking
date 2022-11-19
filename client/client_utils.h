@@ -22,6 +22,7 @@ typedef struct sockaddr_in in_addr_t;
 #include "../common/language_server.h"
 
 extern char *ip;
+
 extern unsigned long port;
 
 typedef struct Connection {

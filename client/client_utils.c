@@ -253,10 +253,9 @@ void get_handler(int *is_command, struct sockaddr_in *addr, char *command) {
   }
   char *buf = calloc(MAX_LEN, sizeof(char));
   pbar_t *pbar = init_pbar(get_num, "Download progress");
-  int _sockfd = init_sockfd(*addr);
   for (long i = 0; i < get_num; i++) {
-    sprintf(buf, "sget %ld %s", i, response);
-    c = set_connection(addr, buf);
+    int sockfd = init_sockfd(*addr);
+    sprintf(c.cmd, "sget %ld %s", i, response);
     write(sockfd, &c, sizeof(Connection));
     memset(buf, 0, MAX_LEN * sizeof(char));
     read(sockfd, buf, MAX_LEN);
@@ -270,8 +269,8 @@ void get_handler(int *is_command, struct sockaddr_in *addr, char *command) {
     } else
       fwrite(buf, MAX_LEN, 1, f);
     update_pbar(pbar, 1);
+    close(sockfd);
   }
-  close(_sockfd);
   close_pbar(pbar);
   free(buf);
   fclose(f);

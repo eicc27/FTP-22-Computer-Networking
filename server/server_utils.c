@@ -156,11 +156,10 @@ void cd_handler(int *is_command, int *cli_sockfd, Connection **connections,
     char *pwd = conn->cmd;
     chdir(pwd);
     printf("pwd: %s, target: %s\n", pwd, response);
-    if (!isdir(pwd, response)) {
+    if (!_isdir( response)) {
       printf("Not a dir: %s\n", response);
       response = yellow(command->cmd);
-      strcat(response, red(": Directory does not exist in "));
-      strcat(response, yellow(pwd));
+      strcat(response, red(": Directory does not exist"));
       write(*cli_sockfd, response, MAX_LEN);
     } else {
       chdir(response);

@@ -47,6 +47,7 @@ int in_commands(char *string);
 int len_of_strings(char **strings);
 
 int isdir(char *cwd, char *dir);
+int _isdir(char *dir);
 int file_exists(char *cwd, char *file);
 char* file_name(char* dir);
 int isnum(char c);

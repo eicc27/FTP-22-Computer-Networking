@@ -38,7 +38,7 @@ int main(int arg, char *argv[]) {
   print_init_info();
   while (1) {
     memset(&command, 0, sizeof(Connection));
-    // printf("server> ");
+    printf("server> ");
     if ((cli_sockfd =
              accept(ser_sockfd, (struct sockaddr *)&cli_addr, &cli_len)) < 0) {
       printf("Accept Error!\n");
