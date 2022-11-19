@@ -1,7 +1,1 @@
-.vscode
-.vscode/
-bin/
-*.exe
-*.o
-*.i
-*.s
+.pdf
