@@ -130,6 +130,7 @@ typedef struct {
     };
 }Packet;
 ```
+Packet结构体用于ftp中的get和put文件传输，msg代表客户端和服务端发送的信号，如FISEZIZE代表此次请求文件大小或此次传输内容中包含文件大小信息。当客户端或服务端得到msg后，通过msg决定下一步要做哪些操作。其中fileInfo结构体用于文件名和文件大小信息的传输，当确认文件大小和文件名后，进行文件内容传输，这时使用dataInfo结构体，每次dataInfo会告知本次包内真正发送的文件内容长度，即dataBuf的有效内容长度。offset告知传输文件进度，dataBuf内包含了真正的文件数据。
 
 
 
