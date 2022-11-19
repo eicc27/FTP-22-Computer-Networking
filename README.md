@@ -2,15 +2,18 @@
 
 A basic FTP impl done by Sihan Chen, Fangbo Zhao, Cheng Qian, and Shengjiu Dai.
 
-Setup in linux
-
-`make`
-
 Set up in Windows
+`cd FTPSERVER`
 
-`gcc -c command.c util.c client.c -std=c99`
+`gcc  server.c command.c util.c -o server.exe -lws2_32`
 
-`gcc -o client.exe util.o command.o client.o`
+`./server.exe`
+
+`cd ..`
+
+`cd FTPCLIENT`
+
+`gcc  client.c command.c util.c -o client.exe -lws2_32`
 
 `./client.exe`
 
